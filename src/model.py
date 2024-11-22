@@ -8,60 +8,67 @@ class MNISTModel(nn.Module):
         
         # First Convolutional Block
         self.conv1 = nn.Sequential(
-            nn.Conv2d(1, 32, kernel_size=3, padding=1),
-            nn.BatchNorm2d(32),
+            nn.Conv2d(1, 8, kernel_size=3, padding=1),
+            nn.BatchNorm2d(8, track_running_stats=True),
             nn.ReLU(),
-            nn.Conv2d(32, 32, kernel_size=3, padding=1),
-            nn.BatchNorm2d(32),
-            nn.ReLU(),
-            nn.MaxPool2d(2, 2),
-            nn.Dropout2d(0.25)
+            nn.MaxPool2d(2, 2)
         )
         
         # Second Convolutional Block
         self.conv2 = nn.Sequential(
-            nn.Conv2d(32, 64, kernel_size=3, padding=1),
-            nn.BatchNorm2d(64),
+            nn.Conv2d(8, 16, kernel_size=3, padding=1),
+            nn.BatchNorm2d(16, track_running_stats=True),
             nn.ReLU(),
-            nn.Conv2d(64, 64, kernel_size=3, padding=1),
-            nn.BatchNorm2d(64),
-            nn.ReLU(),
-            nn.MaxPool2d(2, 2),
-            nn.Dropout2d(0.25)
+            nn.MaxPool2d(2, 2)
         )
         
         # Third Convolutional Block
         self.conv3 = nn.Sequential(
-            nn.Conv2d(64, 128, kernel_size=3, padding=1),
-            nn.BatchNorm2d(128),
+            nn.Conv2d(16, 32, kernel_size=3, padding=1),
+            nn.BatchNorm2d(32, track_running_stats=True),
             nn.ReLU(),
-            nn.MaxPool2d(2, 2),
-            nn.Dropout2d(0.25)
+            nn.MaxPool2d(2, 2)
         )
         
-        # Fully Connected Layers
+        # Fully connected layers
         self.fc1 = nn.Sequential(
-            nn.Linear(128 * 3 * 3, 256),
-            nn.BatchNorm1d(256),
-            nn.ReLU(),
-            nn.Dropout(0.5)
+            nn.Linear(32 * 3 * 3, 60),
+            nn.BatchNorm1d(60, track_running_stats=True),
+            nn.ReLU()
         )
         
-        self.fc2 = nn.Sequential(
-            nn.Linear(256, 128),
-            nn.BatchNorm1d(128),
-            nn.ReLU(),
-            nn.Dropout(0.5)
-        )
+        self.fc2 = nn.Linear(60, 10)
         
-        self.fc3 = nn.Linear(128, 10)
+        self.dropout = nn.Dropout(0.25)
         
     def forward(self, x):
-        x = self.conv1(x)
-        x = self.conv2(x)
-        x = self.conv3(x)
-        x = x.view(-1, 128 * 3 * 3)
-        x = self.fc1(x)
+        # Ensure input has proper batch dimension
+        if x.dim() == 3:
+            x = x.unsqueeze(0)
+        
+        x = self.dropout(self.conv1(x))
+        x = self.dropout(self.conv2(x))
+        x = self.dropout(self.conv3(x))
+        x = x.view(x.size(0), -1)  # Flatten while preserving batch dimension
+        x = self.dropout(self.fc1(x))
         x = self.fc2(x)
-        x = self.fc3(x)
-        return x 
+        return x
+
+    def count_parameters(self):
+        return sum(p.numel() for p in self.parameters() if p.requires_grad)
+
+def print_model_parameters(model):
+    """Detailed parameter count breakdown"""
+    total = 0
+    for name, p in model.named_parameters():
+        if p.requires_grad:
+            params = p.numel()
+            print(f"{name}: {params:,}")
+            total += params
+    print(f"\nTotal parameters: {total:,}")
+    return total
+
+# Calculate parameters
+model = MNISTModel()
+total_params = model.count_parameters()
+print(f"Total parameters: {total_params:,}")
