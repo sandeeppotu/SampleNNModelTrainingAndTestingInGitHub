@@ -149,6 +149,6 @@ Create an issue for questions or suggestions.
 }
 ```
 
-[![ML Pipeline](https://github.com/YOUR_USERNAME/YOUR_REPO_NAME/actions/workflows/ml-pipeline.yml/badge.svg)](https://github.com/YOUR_USERNAME/YOUR_REPO_NAME/actions/workflows/ml-pipeline.yml)
+[![ML Pipeline](https://github.com/sandeeppotu/SampleNNModelTrainingAndTestingInGitHub/actions/workflows/ml-pipeline.yml/badge.svg)](https://github.com/sandeeppotu/SampleNNModelTrainingAndTestingInGitHub/actions/workflows/ml-pipeline.yml)
 
 
