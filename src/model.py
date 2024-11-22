@@ -8,7 +8,7 @@ class MNISTModel(nn.Module):
         # First conv block
         self.conv1 = nn.Sequential(
             nn.Conv2d(1, 4, kernel_size=3, padding=1),
-            nn.BatchNorm2d(4),
+            nn.BatchNorm2d(4, track_running_stats=True),
             nn.ReLU(),
             nn.Dropout2d(0.2)
         )
@@ -16,7 +16,7 @@ class MNISTModel(nn.Module):
         # Second conv block
         self.conv2 = nn.Sequential(
             nn.Conv2d(4, 8, kernel_size=3, padding=1),
-            nn.BatchNorm2d(8),
+            nn.BatchNorm2d(8, track_running_stats=True),
             nn.ReLU(),
             nn.Dropout2d(0.2)
         )
@@ -26,7 +26,7 @@ class MNISTModel(nn.Module):
         # Fully connected layers
         self.fc1 = nn.Sequential(
             nn.Linear(8 * 7 * 7, 32),
-            nn.BatchNorm1d(32),
+            nn.BatchNorm1d(32, track_running_stats=True),
             nn.ReLU(),
             nn.Dropout(0.3)
         )

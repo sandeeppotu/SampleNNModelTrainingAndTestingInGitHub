@@ -11,27 +11,15 @@ def train():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
     
-    # Data augmentation and normalization
-    train_transform = transforms.Compose([
-        transforms.RandomRotation(10),
-        transforms.RandomAffine(
-            degrees=0,
-            translate=(0.1, 0.1),
-            scale=(0.9, 1.1),
-            shear=5
-        ),
-        transforms.ToTensor(),
-        transforms.Normalize((0.1307,), (0.3081,))
-    ])
-    
-    test_transform = transforms.Compose([
+    # Data loading
+    transform = transforms.Compose([
         transforms.ToTensor(),
         transforms.Normalize((0.1307,), (0.3081,))
     ])
     
     # Load datasets
-    train_dataset = datasets.MNIST('./data', train=True, download=True, transform=train_transform)
-    test_dataset = datasets.MNIST('./data', train=False, download=True, transform=test_transform)
+    train_dataset = datasets.MNIST('./data', train=True, download=True, transform=transform)
+    test_dataset = datasets.MNIST('./data', train=False, download=True, transform=transform)
     
     train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=64, shuffle=True)
     test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=1000)
@@ -47,10 +35,12 @@ def train():
     print(f"Total trainable parameters: {total_params}")
     
     best_accuracy = 0
-    num_epochs = 10  # Increased number of epochs
+    num_epochs = 5  # Reduced from 10 to 5 epochs
+    
+    print(f"\nStarting training for {num_epochs} epochs...")
     
     for epoch in range(num_epochs):
-        # Training
+        # Training phase
         model.train()
         running_loss = 0.0
         for batch_idx, (data, target) in enumerate(train_loader):
@@ -66,7 +56,7 @@ def train():
                 print(f'Epoch {epoch+1}/{num_epochs}, Batch {batch_idx}/{len(train_loader)}, Loss: {running_loss/100:.4f}')
                 running_loss = 0.0
         
-        # Evaluation
+        # Evaluation phase
         model.eval()
         correct = 0
         total = 0
@@ -79,7 +69,7 @@ def train():
                 correct += (predicted == target).sum().item()
         
         accuracy = 100 * correct / total
-        print(f'Epoch {epoch+1}, Test Accuracy: {accuracy:.2f}%')
+        print(f'Epoch {epoch+1}/{num_epochs}, Test Accuracy: {accuracy:.2f}%')
         
         # Learning rate scheduling
         scheduler.step(accuracy)
@@ -92,6 +82,8 @@ def train():
             os.makedirs('models', exist_ok=True)
             torch.save(model.state_dict(), save_path, _use_new_zipfile_serialization=False)
             print(f"New best model saved with accuracy: {accuracy:.2f}%")
+    
+    print(f"\nTraining completed! Best accuracy: {best_accuracy:.2f}%")
 
 if __name__ == "__main__":
     train() 
